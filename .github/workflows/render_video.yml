@@ -14,7 +14,7 @@ on:
         type: choice
         options:
           - 'en-IN-NeerjaNeural'    # Best for Hinglish / Indian English
-          - 'hi-IN-MadhuramNeural'  # Best for pure Hindi (Male)
+          - 'hi-IN-MadhurNeural'  # Best for pure Hindi (Male)
           - 'hi-IN-SwaraNeural'     # Best for pure Hindi (Female)
           - 'en-US-AriaNeural'      # Best for pure American English
         default: 'en-IN-NeerjaNeural'
