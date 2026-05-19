@@ -1,0 +1,64 @@
+name: Headless Video Generation Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      script_text:
+        description: 'Paste your English, Hindi, or Hinglish script here'
+        required: true
+        type: string
+        default: 'Namaste! This is an automated headless video generated entirely on GitHub Actions CPU runners.'
+      tts_voice:
+        description: 'TTS Voice Model'
+        required: true
+        type: choice
+        options:
+          - 'en-IN-NeerjaNeural'    # Best for Hinglish / Indian English
+          - 'hi-IN-MadhuramNeural'  # Best for pure Hindi (Male)
+          - 'hi-IN-SwaraNeural'     # Best for pure Hindi (Female)
+          - 'en-US-AriaNeural'      # Best for pure American English
+        default: 'en-IN-NeerjaNeural'
+
+jobs:
+  build_video:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install System Dependencies (FFmpeg)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install edge-tts python-dotenv
+
+      - name: Generate Secure Environment and Script
+        run: |
+          # Write the script input to a text file
+          cat << 'EOF' > script.txt
+          ${{ github.event.inputs.script_text }}
+          EOF
+          
+          # Hydrate the .env file with our configurations
+          echo "TTS_VOICE=${{ github.event.inputs.tts_voice }}" >> .env
+          echo "VIDEO_WIDTH=1080" >> .env
+          echo "VIDEO_HEIGHT=1920" >> .env
+
+      - name: Execute Generation Pipeline
+        run: python generate_video.py
+
+      - name: Upload Video Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Rendered-Video
+          path: final_video.mp4
+          retention-days: 7
